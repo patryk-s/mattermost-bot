@@ -6,9 +6,11 @@ use mattermost_api::client::{AuthenticationData, Mattermost};
 use tokio::runtime;
 use tracing::trace;
 
+mod command;
 mod error;
 mod handler;
 
+use command::IntoCommand;
 use handler::Handler;
 
 pub use self::error::{Error, Result};
@@ -36,11 +38,13 @@ impl MattermostBot {
     }
 
     #[must_use]
-    pub fn add_command<H>(mut self, name: &str, handler: H) -> Self
+    pub fn add_command<H, Args>(mut self, name: &str, handler: H) -> Self
     where
-        H: Fn() -> String + 'static + Send + Sync,
+        H: IntoCommand<Args>,
     {
-        self.handler.commands.insert(name.into(), Box::new(handler));
+        self.handler
+            .commands
+            .insert(name.into(), handler.into_command());
         trace!("adding command: {name}");
         self
     }

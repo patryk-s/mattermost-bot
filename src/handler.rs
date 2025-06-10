@@ -7,18 +7,25 @@ use mattermost_api::{
 };
 use tracing::{debug, trace};
 
+use crate::command::Command;
+
 pub(crate) struct Handler {
-    pub(crate) commands: HashMap<String, Box<dyn Fn() -> String + Send + Sync>>,
+    pub(crate) commands: HashMap<String, Command>,
     pub(crate) client: Mattermost,
 }
 
 impl Handler {
-    fn run_command(&self, name: &str) -> String {
+    fn run_command(&self, name: &str, arg: Option<String>) -> String {
         if !self.commands.contains_key(name) {
             return format!("unsupported command '{name}'");
         }
-        let command = self.commands.get(name).unwrap();
-        command()
+        self.commands
+            .get(name)
+            .map(|c| match c {
+                Command::NoArgs(handler) => handler.call(()),
+                Command::OneArg(handler) => handler.call(arg.unwrap_or_default()),
+            })
+            .unwrap_or_default()
     }
 }
 
@@ -56,7 +63,9 @@ impl WebsocketHandler for Handler {
             first
         };
         debug!("got command {command_name}");
-        let output = self.run_command(command_name);
+        let remainder: Vec<&str> = words.collect();
+        let args = remainder.join(" ");
+        let output = self.run_command(command_name, Some(args));
         let channel_id = &message.broadcast.channel_id;
         self.client
             .post_reply(channel_id, &post.id, &output)
