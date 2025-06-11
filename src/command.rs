@@ -22,25 +22,30 @@ where
     }
 }
 
+#[async_trait::async_trait]
 pub trait CommandHandler<Args> {
-    fn call(&self, args: Args) -> String;
+    async fn call(&self, args: Args) -> String;
 }
 
-impl<F> CommandHandler<()> for F
+#[async_trait::async_trait]
+impl<F, Fut> CommandHandler<()> for F
 where
-    F: Fn() -> String,
+    F: Fn() -> Fut + Sync,
+    Fut: Future<Output = String> + Send,
 {
-    fn call(&self, _args: ()) -> String {
-        self()
+    async fn call(&self, _args: ()) -> String {
+        self().await
     }
 }
 
-impl<F> CommandHandler<String> for F
+#[async_trait::async_trait]
+impl<F, Fut> CommandHandler<String> for F
 where
-    F: Fn(String) -> String,
+    F: Fn(String) -> Fut + Sync,
+    Fut: Future<Output = String> + Send,
 {
-    fn call(&self, args: String) -> String {
-        self(args)
+    async fn call(&self, args: String) -> String {
+        self(args).await
     }
 }
 

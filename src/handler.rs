@@ -15,17 +15,18 @@ pub(crate) struct Handler {
 }
 
 impl Handler {
-    fn run_command(&self, name: &str, arg: Option<String>) -> String {
+    async fn run_command(&self, name: &str, arg: Option<String>) -> String {
         if !self.commands.contains_key(name) {
             return format!("unsupported command '{name}'");
         }
         self.commands
             .get(name)
-            .map(|c| match c {
-                Command::NoArgs(handler) => handler.call(()),
-                Command::OneArg(handler) => handler.call(arg.unwrap_or_default()),
+            .map(async |c| match c {
+                Command::NoArgs(handler) => handler.call(()).await,
+                Command::OneArg(handler) => handler.call(arg.unwrap_or_default()).await,
             })
-            .unwrap_or_default()
+            .unwrap()
+            .await
     }
 }
 
@@ -65,7 +66,7 @@ impl WebsocketHandler for Handler {
         debug!("got command {command_name}");
         let remainder: Vec<&str> = words.collect();
         let args = remainder.join(" ");
-        let output = self.run_command(command_name, Some(args));
+        let output = self.run_command(command_name, Some(args)).await;
         let channel_id = &message.broadcast.channel_id;
         self.client
             .post_reply(channel_id, &post.id, &output)

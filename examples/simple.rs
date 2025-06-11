@@ -1,26 +1,38 @@
 use anyhow::{Context, Result};
 use mattermost_bot::MattermostBot;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let mybot = MattermostBot::new()?
         .add_command("help", help)
         .add_command("status", status)
         .add_command("list", list);
-    mybot.listen().context("problem listening")
+    mybot.listen().await.context("problem listening")
 }
 
-fn help() -> String {
+async fn help() -> String {
     "Available commands:
   - status: show status
-  - list: get list"
+  - list NUM: get list item number"
         .into()
 }
 
-fn status() -> String {
+async fn status() -> String {
     "The status is OK".into()
 }
 
-fn list() -> String {
-    let stuff = vec!["one", "two", "three"];
-    format!("{stuff:?}")
+// fn list(index: i64) -> String {
+async fn list(index: String) -> String {
+    let index: i64 = match index.parse() {
+        Ok(n) => n,
+        Err(e) => return format!("cannot parse {index} to a number: {e}"),
+    };
+    let stuff = ["one", "two", "three"];
+    if index >= stuff.len() as i64 || index < 0 {
+        return format!(
+            "Error: number out of bounds. Available range: `0 -- {}`",
+            stuff.len() - 1
+        );
+    }
+    format!("{index}. element is {}", stuff[index as usize])
 }

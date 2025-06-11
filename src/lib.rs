@@ -3,7 +3,6 @@ use std::env;
 use std::fmt::Debug;
 
 use mattermost_api::client::{AuthenticationData, Mattermost};
-use tokio::runtime;
 use tracing::trace;
 
 mod command;
@@ -49,13 +48,12 @@ impl MattermostBot {
         self
     }
 
-    pub fn listen(self) -> Result<()> {
-        let rt = runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()?;
+    pub async fn listen(self) -> Result<()> {
         let handler = self.handler;
         let mut listener = self.client;
-        rt.block_on(listener.connect_to_websocket(handler))
+        listener
+            .connect_to_websocket(handler)
+            .await
             .map_err(Error::MattermostApi)
     }
 }
