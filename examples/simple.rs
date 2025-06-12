@@ -10,15 +10,14 @@ async fn main() -> Result<()> {
     mybot.listen().await.context("problem listening")
 }
 
-async fn help() -> String {
+async fn help() -> &'static str {
     "Available commands:
   - status: show status
   - list NUM: get list item number"
-        .into()
 }
 
-async fn status() -> String {
-    "The status is OK".into()
+async fn status() -> &'static str {
+    "The status is OK"
 }
 
 // fn list(index: i64) -> String {

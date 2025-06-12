@@ -78,8 +78,10 @@ impl MattermostBot {
 impl Default for MattermostBot {
     /// Create a `MattermostBot` using env variables for url and token
     ///
-    /// Panics
-    /// Will panic if an env is missing
+    /// # Panics
+    ///
+    /// Will panic if the `MATTERMOST_URL` or `MATTERMOST_TOKEN` environment variable is missing.
+    /// Will panic if the value of `MATTERMOST_URL` cannot be parsed into a [`url::Url`](https://docs.rs/url/latest/url/struct.Url.html)
     fn default() -> Self {
         match Self::new() {
             Ok(bot) => bot,

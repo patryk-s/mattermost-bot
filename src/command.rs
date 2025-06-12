@@ -28,24 +28,26 @@ pub trait CommandHandler<Args> {
 }
 
 #[async_trait::async_trait]
-impl<F, Fut> CommandHandler<()> for F
+impl<F, Fut, Res> CommandHandler<()> for F
 where
     F: Fn() -> Fut + Sync,
-    Fut: Future<Output = String> + Send,
+    Fut: Future<Output = Res> + Send,
+    Res: ToString,
 {
     async fn call(&self, _args: ()) -> String {
-        self().await
+        self().await.to_string()
     }
 }
 
 #[async_trait::async_trait]
-impl<F, Fut> CommandHandler<String> for F
+impl<F, Fut, Res> CommandHandler<String> for F
 where
     F: Fn(String) -> Fut + Sync,
-    Fut: Future<Output = String> + Send,
+    Fut: Future<Output = Res> + Send,
+    Res: ToString,
 {
     async fn call(&self, args: String) -> String {
-        self(args).await
+        self(args).await.to_string()
     }
 }
 
