@@ -2,12 +2,13 @@ use std::collections::HashMap;
 
 use mattermost_api::{
     client::Mattermost,
-    models::Post,
+    models::{Post, PostBody},
     socket::{WebsocketEvent, WebsocketEventType, WebsocketHandler},
 };
 use tracing::{debug, trace};
 
 use crate::command::Command;
+use crate::{Error, Result};
 
 pub(crate) struct Handler {
     pub(crate) commands: HashMap<String, Command>,
@@ -27,6 +28,20 @@ impl Handler {
             })
             .unwrap()
             .await
+    }
+
+    /// Post a message to the `channel_id` as a reply to the post with `root_id`
+    pub async fn post_reply(&self, channel_id: &str, root_id: &str, message: &str) -> Result<()> {
+        let _ = self
+            .client
+            .create_post(&PostBody {
+                channel_id: channel_id.into(),
+                message: message.into(),
+                root_id: Some(root_id.into()),
+            })
+            .await
+            .map_err(Error::MattermostApi)?;
+        Ok(())
     }
 }
 
@@ -68,8 +83,7 @@ impl WebsocketHandler for Handler {
         let args = remainder.join(" ");
         let output = self.run_command(command_name, Some(args)).await;
         let channel_id = &message.broadcast.channel_id;
-        self.client
-            .post_reply(channel_id, &post.id, &output)
+        self.post_reply(channel_id, &post.id, &output)
             .await
             .expect("post_reply failed");
     }

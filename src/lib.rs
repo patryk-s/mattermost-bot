@@ -21,6 +21,14 @@ pub struct MattermostBot {
 
 impl MattermostBot {
     /// Create a `MattermostBot` using env variables for url and token.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::EnvVarMissing`] if the `MATTERMOST_URL` or `MATTERMOST_TOKEN` environment variable is
+    /// missing.
+    ///
+    /// Returns [`Error::MattermostApi`] if the value of `MATTERMOST_URL` cannot be parsed into a
+    /// [`url::Url`](https://docs.rs/url/latest/url/struct.Url.html)
     pub fn new() -> Result<Self> {
         let commands = HashMap::new();
         let mm_url =
@@ -48,6 +56,15 @@ impl MattermostBot {
         self
     }
 
+    /// Connect to the websocket API on the instance and listen for incoming events.
+    ///
+    /// This method loops, sending messages received from the websocket connection
+    /// to the passed handler.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::MattermostApi`] if there's a problem with setting up the websocket
+    /// connection.
     pub async fn listen(self) -> Result<()> {
         let handler = self.handler;
         let mut listener = self.client;
