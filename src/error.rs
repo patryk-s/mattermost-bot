@@ -6,6 +6,4 @@ pub enum Error {
     EnvVarMissing(&'static str),
     #[error("problem with mattermost api")]
     MattermostApi(#[source] mattermost_api::errors::ApiError),
-    #[error("I/O error")]
-    Io(#[from] std::io::Error),
 }
