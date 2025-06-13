@@ -72,7 +72,7 @@ impl WebsocketHandler for Handler {
             }
         };
         // ignore all messages not directed to bot
-        if posted_data.mentions.as_ref().is_none_or(|m| m.is_empty()) {
+        if posted_data.mentions.as_ref().is_none_or(String::is_empty) {
             return;
         }
         trace!("{:#?}", posted_data);
