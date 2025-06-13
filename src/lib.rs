@@ -30,7 +30,6 @@ impl MattermostBot {
     /// Returns [`Error::MattermostApi`] if the value of `MATTERMOST_URL` cannot be parsed into a
     /// [`url::Url`](https://docs.rs/url/latest/url/struct.Url.html)
     pub fn new() -> Result<Self> {
-        let commands = HashMap::new();
         let mm_url =
             env::var("MATTERMOST_URL").map_err(|_| Error::EnvVarMissing("MATTERMOST_URL"))?;
         let mm_token =
@@ -39,7 +38,12 @@ impl MattermostBot {
         let client = Mattermost::new(&mm_url, auth_data).map_err(Error::MattermostApi)?;
         let listener = client.clone();
         Ok(MattermostBot {
-            handler: Handler { commands, client },
+            handler: Handler {
+                admins: Vec::new(),
+                admin_commands: HashMap::new(),
+                commands: HashMap::new(),
+                client,
+            },
             client: listener,
         })
     }
@@ -53,6 +57,24 @@ impl MattermostBot {
             .commands
             .insert(name.into(), handler.into_command());
         trace!("adding command: {name}");
+        self
+    }
+
+    #[must_use]
+    pub fn add_admin_command<H, Args>(mut self, name: &str, handler: H) -> Self
+    where
+        H: IntoCommand<Args>,
+    {
+        self.handler
+            .admin_commands
+            .insert(name.into(), handler.into_command());
+        trace!("adding admin command: {name}");
+        self
+    }
+
+    pub fn add_admin(mut self, name: &str) -> Self {
+        self.handler.admins.push(name.into());
+        trace!("adding admin: {name}");
         self
     }
 
