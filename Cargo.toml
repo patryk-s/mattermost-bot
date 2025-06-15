@@ -1,6 +1,6 @@
 [package]
 name = "mattermost-bot"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Patryk Sidzina <patryk.sidzina+mmb@gmail.com>"]
 description = "Create a Mattermost bot that listens and responds to commands"
 homepage = "https://github.com/patryk-s/mattermost-bot"

@@ -8,6 +8,7 @@ use tracing::trace;
 mod command;
 mod error;
 mod handler;
+pub mod response;
 
 use command::IntoCommand;
 use handler::Handler;

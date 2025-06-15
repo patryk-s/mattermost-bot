@@ -1,3 +1,4 @@
+use crate::response::IntoResponse;
 use std::fmt::Debug;
 
 pub trait IntoCommand<Args> {
@@ -32,10 +33,10 @@ impl<F, Fut, Res> CommandHandler<()> for F
 where
     F: Fn() -> Fut + Sync,
     Fut: Future<Output = Res> + Send,
-    Res: ToString,
+    Res: IntoResponse,
 {
     async fn call(&self, _args: ()) -> String {
-        self().await.to_string()
+        self().await.into_response()
     }
 }
 
@@ -44,10 +45,10 @@ impl<F, Fut, Res> CommandHandler<String> for F
 where
     F: Fn(String) -> Fut + Sync,
     Fut: Future<Output = Res> + Send,
-    Res: ToString,
+    Res: IntoResponse,
 {
     async fn call(&self, args: String) -> String {
-        self(args).await.to_string()
+        self(args).await.into_response()
     }
 }
 

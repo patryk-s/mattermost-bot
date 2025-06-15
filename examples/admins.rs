@@ -22,7 +22,6 @@ async fn status() -> &'static str {
     "The status is OK"
 }
 
-// fn list(index: i64) -> String {
 async fn list(index: String) -> String {
     let index: i64 = match index.parse() {
         Ok(n) => n,
