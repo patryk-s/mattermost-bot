@@ -74,9 +74,16 @@ impl MattermostBot {
     }
 
     #[must_use]
-    pub fn add_admin(mut self, name: &str) -> Self {
-        self.handler.admins.push(name.into());
+    pub fn add_admin(mut self, name: String) -> Self {
         trace!("adding admin: {name}");
+        self.handler.admins.push(name);
+        self
+    }
+
+    #[must_use]
+    pub fn add_admins(mut self, names: Vec<String>) -> Self {
+        trace!("adding admins: {names:?}");
+        self.handler.admins.extend(names);
         self
     }
 

@@ -7,7 +7,7 @@ async fn main() -> Result<()> {
         .add_command("help", help)
         .add_command("status", status)
         .add_admin_command("list", list)
-        .add_admin("@bob");
+        .add_admin("@bob".to_string());
     tracing::info!("Starting bot");
     mybot.listen().await.context("problem listening")
 }
